@@ -1,0 +1,53 @@
+@inject ProgressBarServices service
+
+<div class="card-style mb-30">
+    <div class="table-wrapper table-responsive">
+        <table class="table striped-table">
+            <thead>
+                <tr>
+                    <th class="mr-5"></th>
+                    <th>Habilidade</th>
+                    <th>%</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Items)
+                {
+                    <tr>
+                        <td>@(++count)</td>
+                        <td>@item.Title</td>
+                        <td>@item.Percent</td>
+                        <td>
+                            <button @onclick="@(e => OnClickeEditBtn(item.Id))"
+                                class="btn btn-outline-warning">Editar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public List<ProgressBar> Items { get; set; } = new List<ProgressBar>();
+
+    [Parameter]
+    public EventCallback<ProgressBar> OnEdit { get; set; }
+
+    int count = 0;
+
+    protected override void OnParametersSet()
+    {
+        count = 0;
+    }
+
+    async Task OnClickeEditBtn(int id)
+    {
+        ProgressBar modelEdit = await service.GetDataById(id);
+
+        await OnEdit.InvokeAsync(modelEdit);
+    }
+
+}

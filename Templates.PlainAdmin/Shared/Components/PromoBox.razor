@@ -1,0 +1,24 @@
+﻿<div class="promo-box">
+    <h3>@Title</h3>
+    <p>@Description</p>
+    <a href="@Url"
+       target="_blank"
+       rel="nofollow"
+       class="main-btn primary-btn btn-hover">
+        @BtnText
+    </a>
+</div>
+
+@code {
+    [Parameter]
+    public string? Title { get; set; } = "Anvima Tech";
+
+    [Parameter]
+    public string? Description { get; set; } = "2023, todos direios reservado.";
+
+    [Parameter]
+    public string? BtnText { get; set; } = "Contactar";
+
+    [Parameter]
+    public string? Url { get; set; } = "#";
+}

@@ -1,0 +1,121 @@
+﻿@page "/personalinfo"
+@inject PersonalInfoServices service
+
+<PageTitle>Dados Pessoais</PageTitle>
+<TitleWrapper Title="Dados pessoais" />
+
+<Button OnClick="ShowForm" Text=@btnTitle />
+<hr>
+<div class="row">
+    <div class="col" style="@StyleTable">
+        <TableData Items=@items OnEdit="OnEditData" />
+    </div>
+    <div class="col" style="@StyleForm">
+        <div class="card-style mb-30">
+            <h6 class="mb-25">@cardTitle</h6>
+            <EditForm Model="model" OnValidSubmit="SubmitForm">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <hr>
+
+                <div class="input-style-1">
+                    <label>Primeiro Nome</label>
+                    <InputText @bind-Value="model.FirstName" />
+                </div>
+
+                <div class="input-style-1">
+                    <label>Ultimo Nome</label>
+                    <InputText @bind-Value="model.LastName" />
+                </div>
+
+                <div class="input-style-1">
+                    <label>Profissão</label>
+                    <InputText @bind-Value="model.Carrer" />
+                </div>
+
+                <div class="input-style-1">
+                    <label>Breve descrição</label>
+                    <InputTextArea @bind-Value="model.Intro" />
+                </div>
+
+                <div class="input-style-1">
+                    <label>Descrição</label>
+                    <InputTextArea @bind-Value="model.Description" />
+                </div>
+                <hr>
+                <button type="submit" class="btn btn-primary">Salvar</button>
+                <button type="reset" @onclick="LimparForm" class="btn btn-warning">Limpar dados</button>
+                @if (isEdited && model.Id != 1)
+                {
+                    <button type="button" @onclick="DeletarRegistro" class="btn btn-danger px-4">Deletar Registro</button>
+                }
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    PersonalInfo model = new();
+    List<PersonalInfo> items = new List<PersonalInfo>();
+    string cardTitle = "Novo Registro";
+    string btnTitle = "Novo Registro";
+    bool isEdited = false;
+    bool displayForm = false;
+    string StyleForm = "display: none;";
+    string StyleTable = "";
+    protected override async Task OnInitializedAsync() => items = await service.GetAllData();
+
+    void ShowForm()
+    {
+        displayForm = !displayForm;
+        StyleForm = displayForm ? "" : "display: none;";
+        StyleTable = displayForm ? "display: none;" : "";
+        btnTitle = displayForm ? "Mostrar Tabela" : "Novo Registro";
+    }
+
+    async Task SubmitForm()
+    {
+        if (!isEdited)
+        {
+            var result = await service.PostData(model);
+            cardTitle = "Novo Registro";
+            cardTitle = result ? "Criado com sucesso" : "Alguma coisa correu mal";
+            if (result) this.LimparForm();
+        }
+        else
+        {
+            var result = await service.PutData(model);
+            cardTitle = "Editar Registro";
+            cardTitle = result ? "Editado com sucesso" : "Alguma coisa correu mal";
+        }
+        items = await service.GetAllData();
+    }
+
+    void OnEditData(PersonalInfo modelEdit)
+    {
+        model = modelEdit;
+        cardTitle = "Editar Registro";
+        isEdited = true;
+        this.ShowForm();
+    }
+
+    void LimparForm()
+    {
+        model = new();
+        cardTitle = "Novo Registro";
+        isEdited = false;
+    }
+
+    async Task DeletarRegistro()
+    {
+        var resut = await service.DeleteData(model);
+        if (resut)
+            this.LimparForm();
+        else
+            cardTitle = "Erro ao deletar";
+
+        items = await service.GetAllData();
+    }
+
+
+}

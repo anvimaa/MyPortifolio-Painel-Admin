@@ -1,0 +1,31 @@
+﻿<li class="nav-item nav-item-has-children">
+    <a href="#0"
+       class="collapsed"
+       data-bs-toggle="collapse"
+       data-bs-target="#@Id"
+       aria-controls="@Id"
+       aria-expanded="false"
+       aria-label="@Title">
+        <span class="icon">
+            <i class="@Icon"></i>
+        </span>
+        <span class="text">@Title</span>
+    </a>
+    <ul id="@Id" class="collapse dropdown-nav">
+        @ChildContent
+    </ul>
+</li>
+
+@code {
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public string? Id { get; set; }
+
+    [Parameter]
+    public string? Icon { get; set; } = "mdi mdi-abacus";
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

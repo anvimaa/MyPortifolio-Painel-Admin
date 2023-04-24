@@ -1,0 +1,45 @@
+﻿<aside class="sidebar-nav-wrapper @activeClasse">
+    <div class="navbar-logo">
+        <a href="index.html">
+            <img src="assets/images/logo/logo.svg" alt="logo" />
+        </a>
+    </div>
+
+    <nav class="sidebar-nav">
+        <ul>
+            <NavItem Url="" Text="Home" Icon="lni lni-home" />
+            <Divider />
+            <DropDownNav Id="menu_1" Title="Cadastros">
+                <DropDownItem Title="Dados pessoais" Url="personalinfo" />
+                <DropDownItem Title="+ Informações" Url="abouts" />
+                <DropDownItem Title="Habilidades" Url="habilidades" />
+                <DropDownItem Title="Linha do Tempo" Url="timeline" />
+                <DropDownItem Title="Portifolios" Url="portifolios" />
+            </DropDownNav>
+            <Divider />
+        </ul>
+    </nav>
+
+    <PromoBox />
+</aside>
+
+<div class="overlay @activeClasse" @onclick="DesactiveMenu"></div>
+
+@code {
+    [Parameter]
+    public bool ActiveMenu { get; set; } = false;
+
+    [Parameter]
+    public EventCallback<bool> OnDesactiveMenu { get; set; }
+
+    string activeClasse = "";
+
+    protected override void OnParametersSet() => activeClasse = ActiveMenu ? "active" : "";
+
+    void DesactiveMenu()
+    {
+        activeClasse = "";
+        ActiveMenu = !ActiveMenu;
+        OnDesactiveMenu.InvokeAsync(ActiveMenu);
+    }
+}

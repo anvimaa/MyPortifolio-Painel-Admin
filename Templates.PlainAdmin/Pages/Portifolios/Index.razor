@@ -1,0 +1,175 @@
+﻿@page "/portifolios"
+@inject PortifolioServices service
+@inject ILogger<PortifolioServices> Logger
+@inject IWebHostEnvironment Environment
+
+
+<PageTitle>Protifolios</PageTitle>
+
+<TitleWrapper Title="Portifolios" />
+
+<Button OnClick="ShowForm" Text=@btnTitle />
+<hr>
+<div class="row">
+    <div class="col" style="@StyleTable">
+        <TableData Items=@items OnEdit="OnEditData" />
+    </div>
+    <div class="col" style="@StyleForm">
+        <div class="card-style mb-30">
+            <h6 class="mb-25">@cardTitle</h6>
+            <EditForm Model="model" OnValidSubmit="SubmitForm">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <hr>
+
+                <div class="input-style-1">
+                    <label>Url</label>
+                    <InputText @bind-Value="model.Url" />
+                </div>
+
+                <div class="input-style-1">
+                    <label>Local</label>
+                    <InputText @bind-Value="model.UrlGitHub" />
+                </div>
+
+                <div class="input-style-1">
+                    <label>Imagen</label>
+                    <InputFile OnChange="@LoadFiles" multiple />
+                </div>
+
+                <hr>
+                <button type="submit" class="btn btn-primary">Salvar</button>
+                <button type="reset" @onclick="LimparForm" class="btn btn-warning">Limpar dados</button>
+                @if (isEdited)
+                {
+                    <button type="button" @onclick="DeletarRegistro" class="btn btn-danger px-4">Deletar Registro</button>
+                }
+            </EditForm>
+
+            @if (isLoading)
+            {
+                <p>Carregando Arquivo...</p>
+            }
+            else
+            {
+                <ul>
+
+                    <li>
+                        <ul>
+                            <li>Name: @loadedFile.Name</li>
+                            <li>Last modified: @loadedFile.LastModified.ToString()</li>
+                            <li>Size (bytes): @loadedFile.Size</li>
+                            <li>Content type: @loadedFile.ContentType</li>
+                        </ul>
+                    </li>
+
+                </ul>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+
+    #region Variaveis
+    PortifolioItem model = new();
+    List<PortifolioItem> items = new List<PortifolioItem>();
+    string cardTitle = "Novo Registro";
+    string btnTitle = "Novo Registro";
+    bool isEdited = false;
+    bool displayForm = false;
+    string StyleForm = "display: none;";
+    string StyleTable = "";
+    #endregion
+
+    #region Upload
+    private IBrowserFile? loadedFile;
+    private long maxFileSize = 1024 * 15;
+    private int maxAllowedFiles = 1;
+    private bool isLoading = true;
+
+    private async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+        isLoading = true;
+        loadedFile = null;
+        var file = e.GetMultipleFiles(maxAllowedFiles)[0];
+        try
+        {
+            loadedFile = file;
+            var trustedFileNameForFileStorage = Path.GetRandomFileName();
+
+            var path = Path.Combine(Environment.ContentRootPath,
+            Environment.EnvironmentName, "unsafe_uploads",
+            trustedFileNameForFileStorage);
+
+            model.Image = path;
+
+            await using FileStream fs = new(path, FileMode.Create);
+            await file.OpenReadStream(maxFileSize).CopyToAsync(fs);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("File: {Filename} Error: {Error}", file.Name, ex.Message);
+        }
+
+        isLoading = false;
+    }
+    #endregion
+
+    #region Metodos
+
+    protected override async Task OnInitializedAsync() => items = await service.GetAllData();
+
+    void ShowForm()
+    {
+        displayForm = !displayForm;
+        StyleForm = displayForm ? "" : "display: none;";
+        StyleTable = displayForm ? "display: none;" : "";
+        btnTitle = displayForm ? "Mostrar Tabela" : "Novo Registro";
+    }
+
+    async Task SubmitForm()
+    {
+        if (!isEdited)
+        {
+            var result = await service.PostData(model);
+            cardTitle = "Novo Registro";
+            cardTitle = result ? "Criado com sucesso" : "Alguma coisa correu mal";
+            if (result) this.LimparForm();
+        }
+        else
+        {
+            var result = await service.PutData(model);
+            cardTitle = "Editar Registro";
+            cardTitle = result ? "Editado com sucesso" : "Alguma coisa correu mal";
+        }
+        items = await service.GetAllData();
+    }
+
+    void OnEditData(PortifolioItem modelEdit)
+    {
+        model = modelEdit;
+        cardTitle = "Editar Registro";
+        isEdited = true;
+        this.ShowForm();
+    }
+
+    void LimparForm()
+    {
+        model = new();
+        cardTitle = "Novo Registro";
+        isEdited = false;
+    }
+
+    async Task DeletarRegistro()
+    {
+        var resut = await service.DeleteData(model);
+        if (resut)
+            this.LimparForm();
+        else
+            cardTitle = "Erro ao deletar";
+
+        items = await service.GetAllData();
+    }
+    #endregion
+}

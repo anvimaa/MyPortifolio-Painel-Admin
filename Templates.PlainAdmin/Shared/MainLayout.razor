@@ -1,0 +1,29 @@
+﻿@inherits LayoutComponentBase
+
+<PageTitle>Templates.PlainAdmin</PageTitle>
+
+<Aside ActiveMenu=@activeMenu OnDesactiveMenu="DesactiveMenu" />
+
+<div class="main-wrapper @(activeMenu?"active":string.Empty)">
+    <Header OnActiveMenu="ActiveMenu" />
+    <section class="section">
+        <div class="container-fluid">
+            @Body
+        </div>
+    </section>
+    <Footer />
+</div>
+
+@code {
+    bool activeMenu = false;
+
+    void ActiveMenu(bool toggle)
+    {
+        activeMenu = toggle;
+    }
+
+    void DesactiveMenu(bool toggle)
+    {
+        activeMenu = toggle;
+    }
+}

@@ -1,0 +1,11 @@
+﻿<li>
+    <NavLink href="@Url" Match="NavLinkMatch.All"> @Title </NavLink>
+</li>
+
+@code {
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public string? Url { get; set; } = "#";
+}

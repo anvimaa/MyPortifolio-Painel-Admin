@@ -1,0 +1,113 @@
+﻿@page "/habilidades"
+@inject ProgressBarServices service
+
+<PageTitle>Habilidades</PageTitle>
+
+<TitleWrapper Title="Habilidades" />
+
+<Button OnClick="ShowForm" Text=@btnTitle />
+<hr>
+<div class="row">
+    <div class="col" style="@StyleTable">
+        <TableData Items=@items OnEdit="OnEditData" />
+    </div>
+    <div class="col" style="@StyleForm">
+        <div class="card-style mb-30">
+            <h6 class="mb-25">@cardTitle</h6>
+            <EditForm Model="model" OnValidSubmit="SubmitForm">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <hr>
+
+                <div class="input-style-1">
+                    <label>Habilidade</label>
+                    <InputText @bind-Value="model.Title" />
+                </div>
+
+                <div class="input-style-1">
+                    <label>%</label>
+                    <InputText @bind-Value="model.Percent" />
+                </div>
+
+                <hr>
+                <button type="submit" class="btn btn-primary">Salvar</button>
+                <button type="reset" @onclick="LimparForm" class="btn btn-warning">Limpar dados</button>
+                @if (isEdited)
+                {
+                    <button type="button" @onclick="DeletarRegistro" class="btn btn-danger px-4">Deletar Registro</button>
+                }
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    #region Variaveis
+    ProgressBar model = new();
+    List<ProgressBar> items = new List<ProgressBar>();
+    string cardTitle = "Novo Registro";
+    string btnTitle = "Novo Registro";
+    bool isEdited = false;
+    bool displayForm = false;
+    string StyleForm = "display: none;";
+    string StyleTable = "";
+    #endregion
+
+    #region Metodos
+
+    protected override async Task OnInitializedAsync() => items = await service.GetAllData();
+
+    void ShowForm()
+    {
+        displayForm = !displayForm;
+        StyleForm = displayForm ? "" : "display: none;";
+        StyleTable = displayForm ? "display: none;" : "";
+        btnTitle = displayForm ? "Mostrar Tabela" : "Novo Registro";
+    }
+
+    async Task SubmitForm()
+    {
+        if (!isEdited)
+        {
+            var result = await service.PostData(model);
+            cardTitle = "Novo Registro";
+            cardTitle = result ? "Criado com sucesso" : "Alguma coisa correu mal";
+            if (result) this.LimparForm();
+        }
+        else
+        {
+            var result = await service.PutData(model);
+            cardTitle = "Editar Registro";
+            cardTitle = result ? "Editado com sucesso" : "Alguma coisa correu mal";
+        }
+        items = await service.GetAllData();
+    }
+
+    void OnEditData(ProgressBar modelEdit)
+    {
+        model = modelEdit;
+        cardTitle = "Editar Registro";
+        isEdited = true;
+        this.ShowForm();
+    }
+
+    void LimparForm()
+    {
+        model = new();
+        cardTitle = "Novo Registro";
+        isEdited = false;
+    }
+
+    async Task DeletarRegistro()
+    {
+        var resut = await service.DeleteData(model);
+        if (resut)
+            this.LimparForm();
+        else
+            cardTitle = "Erro ao deletar";
+
+        items = await service.GetAllData();
+    }
+    #endregion
+}

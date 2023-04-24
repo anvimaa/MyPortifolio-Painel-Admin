@@ -1,0 +1,19 @@
+﻿<li class="nav-item">
+    <NavLink href=@Url Match="NavLinkMatch.All">
+        <span class="icon">
+            <i class="@Icon"></i>
+        </span>
+        <span class="text">@Text</span>
+    </NavLink>
+</li>
+
+@code {
+    [Parameter]
+    public string Url { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Text { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? Icon { get; set; } = "mdi mdi-abacus";
+}

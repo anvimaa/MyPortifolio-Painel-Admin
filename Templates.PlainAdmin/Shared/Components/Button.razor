@@ -1,0 +1,17 @@
+<button @onclick="OnClickBtn" class="main-btn @Type-btn-outline rounded-full btn-hover">@Text</button>
+
+@code {
+    [Parameter]
+    public string? Text { get; set; }
+
+    [Parameter]
+    public string Type { get; set; } = "primary";
+
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    void OnClickBtn()
+    {
+        OnClick.InvokeAsync();
+    }
+}

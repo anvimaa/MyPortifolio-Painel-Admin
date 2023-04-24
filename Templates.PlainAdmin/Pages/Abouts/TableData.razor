@@ -1,0 +1,55 @@
+@inject AboutsServices service
+
+<div class="card-style mb-30">
+    <div class="table-wrapper table-responsive">
+        <table class="table striped-table">
+            <thead>
+                <tr>
+                    <th class="mr-5"></th>
+                    <th>Titulo</th>
+                    <th>Primeiro Texto</th>
+                    <th>Segundo Texto</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Items)
+                {
+                    <tr>
+                        <td>@(++count)</td>
+                        <td>@item.Title</td>
+                        <td>@item.PrimaryText</td>
+                        <td>@item.SecundaryText</td>
+                        <td>
+                            <button @onclick="@(e => OnClickeEditBtn(item.Id))"
+                                class="btn btn-outline-warning">Editar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public List<AboutItem> Items { get; set; } = new List<AboutItem>();
+
+    [Parameter]
+    public EventCallback<AboutItem> OnEdit { get; set; }
+
+    int count = 0;
+
+    protected override void OnParametersSet()
+    {
+        count = 0;
+    }
+
+    async Task OnClickeEditBtn(int id)
+    {
+        AboutItem modelEdit = await service.GetDataById(id);
+
+        await OnEdit.InvokeAsync(modelEdit);
+    }
+
+}
